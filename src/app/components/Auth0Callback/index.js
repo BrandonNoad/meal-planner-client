@@ -16,7 +16,7 @@ const Auth0Callback = ({ auth0Action }) => {
                 navigate('/');
                 return;
         }
-    }, []);
+    }, [auth0Action]);
 
     // TODO: Use loading component.
     return <p>Loading...</p>;

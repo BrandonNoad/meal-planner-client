@@ -6,7 +6,7 @@ import _keyBy from 'lodash/keyBy';
 import _groupBy from 'lodash/groupBy';
 
 import UrqlClient, { getFetchOptions } from '../util/urqlClient';
-import { selectTeam } from './userSlice';
+import { selectTeam, selectAuthToken } from './userSlice';
 import { NOT_FETCHED } from '../../util/constants';
 
 const { reducer, actions } = createSlice({
@@ -84,7 +84,7 @@ const fetchScheduledRecipesEpic = (action$, state$) => {
                         teamId: selectTeam(state$.value).id,
                         options: { filter: { date: dateStrings } }
                     },
-                    { fetchOptions: getFetchOptions(state$.value) }
+                    { fetchOptions: getFetchOptions(selectAuthToken(state$.value)) }
                 ).toPromise()
             ).pipe(
                 map((response) => ({

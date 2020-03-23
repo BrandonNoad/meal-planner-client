@@ -34,6 +34,7 @@ export const fetchSession = () =>
                 const { error } = err;
 
                 if (error !== 'login_required') {
+                    // TODO: handle this case
                     // return reject(err);
                 }
 
