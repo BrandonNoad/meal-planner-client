@@ -1,13 +1,14 @@
 import React from 'react';
+import { Card } from 'theme-ui';
 
-import WeekPlannerDayPlanHeading from '../WeekPlannerDayPlanHeading';
-import WeekPlannerDayPlanRecipes from '../WeekPlannerDayPlanRecipes';
+import WeekPlannerDayPlanHeading from './WeekPlannerDayPlanHeading';
+import WeekPlannerDayPlanRecipes from './WeekPlannerDayPlanRecipes';
 
 const WeekPlannerDayPlan = ({ moment }) => (
-    <div style={{ display: 'inline-block' }}>
+    <Card>
         <WeekPlannerDayPlanHeading moment={moment} />
         <WeekPlannerDayPlanRecipes moment={moment} />
-    </div>
+    </Card>
 );
 
 export default WeekPlannerDayPlan;

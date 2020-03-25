@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectRecipesFactory } from '../../redux/scheduledRecipesSlice';
-import { NOT_FETCHED } from '../../../util/constants';
+import { selectRecipesFactory } from '../../../../../redux/scheduledRecipesSlice';
+import { NOT_FETCHED } from '../../../../../../util/constants';
 
 const WeekPlannerDayPlanRecipes = ({ moment }) => {
     const selectRecipes = useMemo(selectRecipesFactory, []);

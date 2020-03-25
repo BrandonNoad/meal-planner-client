@@ -1,43 +1,33 @@
 import React, { useReducer } from 'react';
 import Moment from 'moment';
+import { Redirect } from '@reach/router';
+import { Box, Flex } from 'theme-ui';
 
-import WeekPlannerNav from '../WeekPlannerNav';
-import WeekPlannerHeading from '../WeekPlannerHeading';
-import WeekPlannerDayPlans from '../WeekPlannerDayPlans';
+import WeekPlannerNav from './WeekPlannerNav';
+import WeekPlannerHeading from './WeekPlannerHeading';
+import WeekPlannerDayPlans from './WeekPlannerDayPlans';
 
-const reducer = (state, action) => {
-    switch (action.type) {
-        case 'goto/today':
-            return Moment();
+const WeekPlanner = ({ dateString }) => {
+    const moment = Moment(dateString, 'GGGG-[W]W', true);
 
-        case 'goto/prevWeek':
-            return Moment(state).subtract(7, 'days');
-
-        case 'goto/nextWeek':
-            return Moment(state).add(7, 'days');
-
-        default:
-            return state;
+    if (!moment.isValid()) {
+        return <Redirect to="/app" noThrow />;
     }
-};
-
-const WeekPlanner = () => {
-    const [moment, dispatch] = useReducer(reducer, Moment());
-
-    const handleClickPrevWeek = () => dispatch({ type: 'goto/prevWeek' });
-    const handleClickThisWeek = () => dispatch({ type: 'goto/today' });
-    const handleClickNextWeek = () => dispatch({ type: 'goto/nextWeek' });
 
     return (
-        <div>
-            <WeekPlannerNav
-                onClickPrevWeek={handleClickPrevWeek}
-                onClickThisWeek={handleClickThisWeek}
-                onClickNextWeek={handleClickNextWeek}
-            />
-            <WeekPlannerHeading moment={moment} />
-            <WeekPlannerDayPlans moment={moment} />
-        </div>
+        <>
+            <Flex mb={3} sx={{ alignItems: 'center' }}>
+                <Box mr={3}>
+                    <WeekPlannerNav moment={moment} />
+                </Box>
+                <Box>
+                    <WeekPlannerHeading moment={moment} />
+                </Box>
+            </Flex>
+            <Box>
+                <WeekPlannerDayPlans moment={moment} />
+            </Box>
+        </>
     );
 };
 

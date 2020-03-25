@@ -1,5 +1,6 @@
 import React from 'react';
 import Moment from 'moment';
+import { Heading } from 'theme-ui';
 
 // Returns a string in 3 different formats depending on whether Monday and Sunday are in the same
 // month/year:
@@ -42,6 +43,6 @@ const getWeekHeading = (moment) => {
     );
 };
 
-const WeekPlannerHeading = ({ moment }) => <h2>{getWeekHeading(moment)}</h2>;
+const WeekPlannerHeading = ({ moment }) => <Heading>{getWeekHeading(moment)}</Heading>;
 
 export default WeekPlannerHeading;

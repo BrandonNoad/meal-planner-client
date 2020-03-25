@@ -2,9 +2,10 @@ import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import Moment from 'moment';
 import _range from 'lodash/range';
+import { Grid } from 'theme-ui';
 
-import WeekPlannerDayPlan from '../WeekPlannerDayPlan';
-import { fetchScheduledRecipes } from '../../redux/scheduledRecipesSlice';
+import WeekPlannerDayPlan from './WeekPlannerDayPlan';
+import { fetchScheduledRecipes } from '../../../redux/scheduledRecipesSlice';
 
 const WeekPlannerDayPlans = ({ moment }) => {
     const dispatch = useDispatch();
@@ -26,12 +27,18 @@ const WeekPlannerDayPlans = ({ moment }) => {
         );
     }, [moment]);
 
-    return _range(7).map((n) => {
-        // Sets the ISO day of the week with 1 being Monday and 7 being Sunday.
-        const dayMoment = Moment(moment).isoWeekday(n + 1);
+    return (
+        <Grid gap={3} columns={[1, 2, 4]}>
+            {_range(7).map((n) => {
+                // Sets the ISO day of the week with 1 being Monday and 7 being Sunday.
+                const dayMoment = Moment(moment).isoWeekday(n + 1);
 
-        return <WeekPlannerDayPlan moment={dayMoment} key={dayMoment.format('YYYY-MM-DD')} />;
-    });
+                return (
+                    <WeekPlannerDayPlan moment={dayMoment} key={dayMoment.format('YYYY-MM-DD')} />
+                );
+            })}
+        </Grid>
+    );
 };
 
 export default WeekPlannerDayPlans;

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Subject, from } from 'rxjs';
 import { exhaustMap } from 'rxjs/operators';
+import { Box, Flex, Input, Button } from 'theme-ui';
 
 import UrqlClient, { getFetchOptions } from '../../util/urqlClient';
 import { selectTeam, selectAuthToken } from '../../redux/userSlice';
@@ -63,15 +64,20 @@ const RecipeImporter = ({ user }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input
-                type="text"
-                placeholder="Recipe url"
-                value={url}
-                onChange={handleChangeRecipeUrl}
-            />
-            <button type="submit">Import!</button>
-        </form>
+        <>
+            <Box as="form" onSubmit={handleSubmit}>
+                <Flex>
+                    <Input
+                        placeholder="Recipe url"
+                        value={url}
+                        onChange={handleChangeRecipeUrl}
+                        mr={2}
+                        sx={{ width: ['100%', '75%', '50%'] }}
+                    />
+                    <Button type="submit">Import!</Button>
+                </Flex>
+            </Box>
+        </>
     );
 };
 
