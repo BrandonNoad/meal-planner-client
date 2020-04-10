@@ -23,10 +23,14 @@ const WeekPlannerDayPlanRecipes = ({ moment }) => {
         .slice(0, NUM_RECIPES_TO_DISPLAY)
         .map((recipe, idx) => <li key={idx}>{recipe.name}</li>);
 
-    return recipes.length <= NUM_RECIPES_TO_DISPLAY ? (
-        <ul>{items}</ul>
-    ) : (
-        <ul>{[...items, `+ ${recipes.length - NUM_RECIPES_TO_DISPLAY} More!`]}</ul>
+    const extraItem = (
+        <li key={NUM_RECIPES_TO_DISPLAY}>{`+ ${recipes.length - NUM_RECIPES_TO_DISPLAY} More!`}</li>
+    );
+
+    return (
+        <ul className="fa-ul" style={{ lineHeight: 'normal' }}>
+            {recipes.length <= NUM_RECIPES_TO_DISPLAY ? items : [...items, extraItem]}
+        </ul>
     );
 };
 
