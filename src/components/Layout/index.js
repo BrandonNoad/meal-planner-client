@@ -1,19 +1,10 @@
 import React from 'react';
-import { Box, Flex, Button, useColorMode } from 'theme-ui';
+import { Box, Flex, Button } from 'theme-ui';
 
 import { useUser } from '../../util/customHooks';
 import { logIn, logOut } from '../../util/Auth0';
 import { NOT_FETCHED } from '../../util/constants';
 import Link from '../Link';
-
-const colorModes = ['default', 'dark', 'deep', 'swiss'];
-
-const colorModeToLabel = {
-    default: 'Light',
-    dark: 'Dark',
-    deep: 'Deep',
-    swiss: 'Swiss'
-};
 
 const AuthButton = ({ user, ...rest }) => {
     if (user === NOT_FETCHED) {
@@ -36,17 +27,7 @@ const AuthButton = ({ user, ...rest }) => {
 };
 
 const Layout = ({ children }) => {
-    const [activeColorMode, setActiveColorMode] = useColorMode();
-
     const user = useUser();
-
-    const handleClickToggleColorMode = () => {
-        const index = colorModes.indexOf(activeColorMode);
-
-        const nextColorMode = colorModes[(index + 1) % colorModes.length];
-
-        setActiveColorMode(nextColorMode);
-    };
 
     return (
         <Box>
@@ -64,9 +45,6 @@ const Layout = ({ children }) => {
                     </Box>
                     <Box>
                         <AuthButton mr={2} user={user} />
-                        <Button onClick={handleClickToggleColorMode}>
-                            {colorModeToLabel[activeColorMode]}
-                        </Button>
                     </Box>
                 </Flex>
             </Box>

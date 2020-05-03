@@ -8,6 +8,7 @@ import PrivateRoute from '../app/components/PrivateRoute';
 import WeekPlanner from '../app/components/WeekPlanner';
 import DayPlanner from '../app/components/DayPlanner';
 import RecipeImporter from '../app/components/RecipeImporter';
+import GroceryList from '../app/components/GroceryList';
 
 const AppPage = () => {
     // e.g. 2020-W25
@@ -20,6 +21,7 @@ const AppPage = () => {
                 <PrivateRoute path="/app/plan/week/:dateString" component={WeekPlanner} />
                 <PrivateRoute path="/app/plan/day/:dateString" component={DayPlanner} />
                 <PrivateRoute path="/app/import" component={RecipeImporter} />
+                <PrivateRoute path="/app/groceryLists/:dateString" component={GroceryList} />
                 <Redirect from="/app/*" to={`/app/plan/week/${defaultWeekDateString}`} noThrow />
             </Router>
         </Layout>

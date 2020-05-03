@@ -13,7 +13,7 @@ const DayPlannerRecipes = ({ dateString }) => {
     // useMemo vs useCallback
     // The difference is that useCallback returns its function when the dependencies change while
     // useMemo calls its function and returns the result.
-    // We want each component to have its own copy of selectRecipes, so use useMemo.
+    // We want each component to have its own copy of selectRecipesForDay, so use useMemo.
     const selectRecipesForDay = useMemo(selectRecipesForDayFactory, []);
 
     const recipes = useSelector((state) => selectRecipesForDay(state, dateString));

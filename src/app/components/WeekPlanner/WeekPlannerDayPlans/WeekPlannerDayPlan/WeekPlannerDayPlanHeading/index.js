@@ -1,16 +1,8 @@
 import React from 'react';
 import Moment from 'moment';
-import { Heading, Flex, Box, Text, Button } from 'theme-ui';
+import { Flex, Box, Text, Button } from 'theme-ui';
 
 import Link from '../../../../../../components/Link';
-
-{
-    /* <Heading as="h3">
-    <Link to={`/app/plan/day/${moment.format('YYYY-MM-DD')}`}>
-        {moment.format('ddd D').toUpperCase()}
-    </Link>
-</Heading> */
-}
 
 const WeekPlannerDayPlanHeading = ({ moment }) => {
     const isToday = moment.isSame(Moment(), 'day');
