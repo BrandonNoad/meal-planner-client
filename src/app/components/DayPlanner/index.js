@@ -7,12 +7,20 @@ import DayPlannerHeading from './DayPlannerHeading';
 import DayPlannerAddRecipe from './DayPlannerAddRecipe';
 import DayPlannerRecipes from './DayPlannerRecipes';
 import { fetchScheduledRecipes } from '../../redux/scheduledRecipesSlice';
+import { fetchRecipes } from '../../redux/recipesSlice';
 
 const DayPlanner = ({ dateString }) => {
     const dispatch = useDispatch();
 
+    // TODO: move to <DayPlannerAddRecipe />?
+    useEffect(() => {
+        // Fetch the recipes for the Add Recipe dropdown.
+        dispatch(fetchRecipes());
+    }, []);
+
     const moment = Moment(dateString, 'YYYY-MM-DD', true);
 
+    // TODO: move to <DayPlannerRecipes />?
     useEffect(() => {
         if (!moment.isValid()) {
             return;
@@ -29,8 +37,8 @@ const DayPlanner = ({ dateString }) => {
     return (
         <>
             <DayPlannerHeading moment={moment} />
-            <DayPlannerAddRecipe />
-            <DayPlannerRecipes moment={moment} />
+            <DayPlannerAddRecipe dateString={dateString} />
+            <DayPlannerRecipes dateString={dateString} />
         </>
     );
 };

@@ -59,7 +59,7 @@ const WeekPlannerDayPlanHeading = ({ moment }) => {
                         }
                     }}
                 >
-                    Add Recipes +
+                    Edit Recipes
                 </Button>
             </Box>
         </Flex>

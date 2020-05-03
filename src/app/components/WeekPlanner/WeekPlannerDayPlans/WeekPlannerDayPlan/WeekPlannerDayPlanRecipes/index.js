@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
-import { selectRecipesFactory } from '../../../../../redux/scheduledRecipesSlice';
+import { selectRecipesForDayFactory } from '../../../../../redux/scheduledRecipesSlice';
 import { NOT_FETCHED } from '../../../../../../util/constants';
 
 const WeekPlannerDayPlanRecipes = ({ moment }) => {
-    const selectRecipes = useMemo(selectRecipesFactory, []);
+    const selectRecipesForDay = useMemo(selectRecipesForDayFactory, []);
 
-    const recipes = useSelector((state) => selectRecipes(state, moment.format('YYYY-MM-DD')));
+    const recipes = useSelector((state) => selectRecipesForDay(state, moment.format('YYYY-MM-DD')));
 
     if (recipes === NOT_FETCHED) {
         return <p>Loading...</p>;

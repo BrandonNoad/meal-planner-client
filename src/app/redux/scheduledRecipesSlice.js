@@ -1,6 +1,6 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 import { from, of } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
+import { switchMap, map, exhaustMap } from 'rxjs/operators';
 import { combineEpics, ofType } from 'redux-observable';
 import _keyBy from 'lodash/keyBy';
 import _groupBy from 'lodash/groupBy';
@@ -30,12 +30,41 @@ const { reducer, actions } = createSlice({
             const groupedByDate = {
                 ...state.groupedByDate,
                 ...dateStrings.reduce((acc, dateString) => {
-                    const scheduledRecipeIds = scheduledRecipesGroupedByDate[dateString] || [];
+                    const scheduledRecipesForDate = scheduledRecipesGroupedByDate[dateString] || [];
 
-                    acc[dateString] = scheduledRecipeIds.map(({ id }) => id);
+                    acc[dateString] = scheduledRecipesForDate.map(({ id }) => id);
 
                     return acc;
                 }, {})
+            };
+
+            return { indexedById, groupedByDate };
+        },
+        addScheduledRecipe: (state) => state,
+        addScheduledRecipeFulfilled: (state, action) => {
+            const indexedById = {
+                ...state.indexedById,
+                [action.payload.id]: action.payload
+            };
+
+            const scheduledRecipeIdsForDate = state.groupedByDate[action.payload.date] || [];
+
+            const groupedByDate = {
+                ...state.groupedByDate,
+                [action.payload.date]: [...scheduledRecipeIdsForDate, action.payload.id]
+            };
+
+            return { indexedById, groupedByDate };
+        },
+        removeScheduledRecipe: (state) => state,
+        removeScheduledRecipeFulfilled: (state, action) => {
+            const { [action.payload.id]: removeThisRecipe, ...indexedById } = state.indexedById;
+
+            const groupedByDate = {
+                ...state.groupedByDate,
+                [removeThisRecipe.date]: state.groupedByDate[removeThisRecipe.date].filter(
+                    (id) => id !== removeThisRecipe.id
+                )
             };
 
             return { indexedById, groupedByDate };
@@ -45,7 +74,14 @@ const { reducer, actions } = createSlice({
 
 export const scheduledRecipesReducer = reducer;
 
-export const { fetchScheduledRecipes, fetchScheduledRecipesFulfilled } = actions;
+export const {
+    fetchScheduledRecipes,
+    fetchScheduledRecipesFulfilled,
+    addScheduledRecipe,
+    addScheduledRecipeFulfilled,
+    removeScheduledRecipe,
+    removeScheduledRecipeFulfilled
+} = actions;
 
 const scheduledRecipesQuery = `
   query fetchScheduledRecipes($teamId: Int!, $options: ScheduledRecipesOptions) {
@@ -62,13 +98,13 @@ const scheduledRecipesQuery = `
 `;
 
 const fetchScheduledRecipesEpic = (action$, state$) => {
-    const selectRecipes = selectRecipesFactory();
+    const selectRecipesForDay = selectRecipesForDayFactory();
 
     return action$.pipe(
         ofType(fetchScheduledRecipes.type),
         switchMap((action) => {
             const dateStrings = action.payload.dateStrings.filter((dateString) => {
-                const recipes = selectRecipes(state$.value, dateString);
+                const recipes = selectRecipesForDay(state$.value, dateString);
 
                 return recipes === NOT_FETCHED;
             });
@@ -97,11 +133,69 @@ const fetchScheduledRecipesEpic = (action$, state$) => {
     );
 };
 
-export const scheduledRecipesEpic = combineEpics(fetchScheduledRecipesEpic);
+const addRecipeMutation = `
+  mutation addRecipeMutation($teamId: Int!, $recipeId: Int!, $date: String!) {
+    addRecipe(teamId: $teamId, recipeId: $recipeId, date: $date) {
+      id
+      date
+      recipe {
+          id
+          name
+          url
+      }
+    }
+  }
+`;
+
+const addScheduledRecipeEpic = (action$, state$) =>
+    action$.pipe(
+        ofType(addScheduledRecipe.type),
+        exhaustMap((action) =>
+            from(
+                UrqlClient.mutation(
+                    addRecipeMutation,
+                    {
+                        teamId: selectTeam(state$.value).id,
+                        recipeId: action.payload.recipeId,
+                        date: action.payload.date
+                    },
+                    { fetchOptions: getFetchOptions(selectAuthToken(state$.value)) }
+                ).toPromise()
+            ).pipe(map((response) => response.data.addRecipe))
+        ),
+        map((payload) => addScheduledRecipeFulfilled(payload))
+    );
+
+const removeRecipeMutation = `
+  mutation removeRecipeMutation($id: Int!) {
+    removeRecipe(id: $id)
+  }
+`;
+
+const removeScheduledRecipeEpic = (action$, state$) =>
+    action$.pipe(
+        ofType(removeScheduledRecipe.type),
+        exhaustMap((action) =>
+            from(
+                UrqlClient.mutation(
+                    removeRecipeMutation,
+                    { id: action.payload.id },
+                    { fetchOptions: getFetchOptions(selectAuthToken(state$.value)) }
+                ).toPromise()
+            ).pipe(map(() => action.payload))
+        ),
+        map((payload) => removeScheduledRecipeFulfilled(payload))
+    );
+
+export const scheduledRecipesEpic = combineEpics(
+    fetchScheduledRecipesEpic,
+    addScheduledRecipeEpic,
+    removeScheduledRecipeEpic
+);
 
 const selectScheduledRecipes = (state) => state.scheduledRecipes;
 
-export const selectRecipesFactory = () =>
+export const selectRecipesForDayFactory = () =>
     createSelector(
         selectScheduledRecipes,
         (state, dateString) => dateString,
@@ -110,8 +204,9 @@ export const selectRecipesFactory = () =>
                 return NOT_FETCHED;
             }
 
-            return scheduledRecipes.groupedByDate[dateString].map(
-                (id) => scheduledRecipes.indexedById[id].recipe
-            );
+            return scheduledRecipes.groupedByDate[dateString].map((id) => ({
+                ...scheduledRecipes.indexedById[id].recipe,
+                id
+            }));
         }
     );

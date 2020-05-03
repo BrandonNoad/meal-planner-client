@@ -1,11 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { useCombobox } from 'downshift';
 import { Box, Flex, Label, Input, Button } from 'theme-ui';
+import { useSelector } from 'react-redux';
 
-const initialItems = ['red', 'red2', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'];
+import { addScheduledRecipe } from '../../../redux/scheduledRecipesSlice';
+import { selectRecipes } from '../../../redux/recipesSlice';
+import { NOT_FETCHED } from '../../../../util/constants';
 
-const DayPlannerAddRecipe = () => {
-    const [items, setItems] = useState(initialItems);
+const DayPlannerAddRecipe = ({ dateString }) => {
+    const dispatch = useDispatch();
+
+    const recipes = useSelector(selectRecipes);
+
+    const [items, setItems] = useState([]);
+
+    useEffect(() => {
+        if (recipes !== NOT_FETCHED) {
+            setItems(recipes);
+        }
+    }, [recipes]);
+
+    const itemToString = (item) => (item === null ? '' : item.name);
 
     const {
         getLabelProps,
@@ -15,18 +31,39 @@ const DayPlannerAddRecipe = () => {
         getMenuProps,
         getItemProps,
         isOpen,
-        highlightedIndex
-        // selectedItem
+        highlightedIndex,
+        selectedItem,
+        reset
     } = useCombobox({
         items,
+        itemToString,
         onInputValueChange: ({ inputValue }) => {
             const searchString = inputValue.toLowerCase();
-            setItems(initialItems.filter((item) => item.toLowerCase().startsWith(searchString)));
+            setItems(
+                recipes.filter((recipe) =>
+                    itemToString(recipe)
+                        .toLowerCase()
+                        .includes(searchString)
+                )
+            );
         }
     });
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        dispatch(
+            addScheduledRecipe({
+                recipeId: selectedItem.id,
+                date: dateString
+            })
+        );
+
+        reset();
+    };
+
     return (
-        <Box as="form">
+        <Box as="form" onSubmit={handleSubmit}>
             <Label {...getLabelProps()}>Add Recipe:</Label>
             <Box {...getComboboxProps()}>
                 <Flex>
@@ -40,13 +77,16 @@ const DayPlannerAddRecipe = () => {
                     items.map((item, index) => (
                         <li
                             style={highlightedIndex === index ? { backgroundColor: '#bde4ff' } : {}}
-                            key={`${item}${index}`}
+                            key={item.id}
                             {...getItemProps({ item, index })}
                         >
-                            {item}
+                            {item.name}
                         </li>
                     ))}
             </ul>
+            <Button type="submit" disabled={selectedItem === null}>
+                Add
+            </Button>
         </Box>
     );
 };
