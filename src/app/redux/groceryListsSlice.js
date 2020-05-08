@@ -42,6 +42,24 @@ const { reducer, actions } = createSlice({
             };
 
             return { indexedByWeek };
+        },
+        deleteGroceryList: (state) => state,
+        deleteGroceryListFulfilled: (state, action) => {
+            const {
+                [action.payload.date]: deleteThisGroceryList,
+                ...indexedByWeek
+            } = state.indexedByWeek;
+
+            return { indexedByWeek };
+        },
+        updateGroceryList: (state) => state,
+        updateGroceryListFulfilled: (state, action) => {
+            const indexedByWeek = {
+                ...state.indexedByWeek,
+                [action.payload.date]: action.payload
+            };
+
+            return { indexedByWeek };
         }
     }
 });
@@ -52,11 +70,15 @@ export const {
     fetchGroceryLists,
     fetchGroceryListsFulfilled,
     createGroceryList,
-    createGroceryListFulfilled
+    createGroceryListFulfilled,
+    deleteGroceryList,
+    deleteGroceryListFulfilled,
+    updateGroceryList,
+    updateGroceryListFulfilled
 } = actions;
 
 const groceryListsQuery = `
-  query fetchGroceryLists($teamId: Int!, $options: QueryOptions) {
+  query fetchGroceryLists($teamId: Int!, $options: QueryOptionsInput) {
     groceryLists(teamId: $teamId, options: $options) {
       id
       date
@@ -139,7 +161,66 @@ const createGroceryListEpic = (action$, state$) => {
     );
 };
 
-export const groceryListsEpic = combineEpics(fetchGroceryListsEpic, createGroceryListEpic);
+const deleteGroceryListMutation = `
+  mutation deleteGroceryListMutation($id: Int!) {
+    deleteGroceryList(id: $id)
+  }
+`;
+
+const deleteGroceryListEpic = (action$, state$) => {
+    return action$.pipe(
+        ofType(deleteGroceryList.type),
+        exhaustMap((action) =>
+            from(
+                UrqlClient.mutation(
+                    deleteGroceryListMutation,
+                    { id: action.payload.id },
+                    { fetchOptions: getFetchOptions(selectAuthToken(state$.value)) }
+                ).toPromise()
+            ).pipe(map(() => action.payload))
+        ),
+        map((payload) => deleteGroceryListFulfilled(payload))
+    );
+};
+
+const updateGroceryListMutation = `
+  mutation updateGroceryListMutation($id: Int!, $items: [GroceryListItemInput!]!) {
+    updateGroceryList(id: $id, items: $items) {
+      id
+      date
+      name
+      items {
+          name
+          category
+          quantity
+          unit
+      }
+    }
+  }
+`;
+
+const updateGroceryListEpic = (action$, state$) => {
+    return action$.pipe(
+        ofType(updateGroceryList.type),
+        exhaustMap((action) =>
+            from(
+                UrqlClient.mutation(
+                    updateGroceryListMutation,
+                    { id: action.payload.id, items: action.payload.items },
+                    { fetchOptions: getFetchOptions(selectAuthToken(state$.value)) }
+                ).toPromise()
+            ).pipe(map((response) => response.data.updateGroceryList))
+        ),
+        map((payload) => updateGroceryListFulfilled(payload))
+    );
+};
+
+export const groceryListsEpic = combineEpics(
+    fetchGroceryListsEpic,
+    createGroceryListEpic,
+    deleteGroceryListEpic,
+    updateGroceryListEpic
+);
 
 const selectGroceryLists = (state) => state.groceryLists;
 

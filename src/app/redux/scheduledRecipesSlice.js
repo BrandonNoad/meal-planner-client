@@ -84,7 +84,7 @@ export const {
 } = actions;
 
 const scheduledRecipesQuery = `
-  query fetchScheduledRecipes($teamId: Int!, $options: QueryOptions) {
+  query fetchScheduledRecipes($teamId: Int!, $options: QueryOptionsInput) {
     scheduledRecipes(teamId: $teamId, options: $options) {
       id
       date

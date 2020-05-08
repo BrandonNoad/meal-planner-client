@@ -25,7 +25,12 @@ const WeekPlannerGroceryListActions = ({ dateString }) => {
             dispatch(createGroceryList({ date: dateString }));
         };
 
-        return <Button onClick={handleClick}>Create Grocery List</Button>;
+        return (
+            <>
+                <Button onClick={handleClick}>Create Grocery List</Button>
+                {'TODO: This should redirect you to the list'}
+            </>
+        );
     }
 
     return (

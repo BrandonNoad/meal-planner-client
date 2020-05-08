@@ -28,16 +28,22 @@ const WeekPlannerDayPlans = ({ moment }) => {
     }, [moment]);
 
     return (
-        <Grid gap={3} columns={[1, 2, 4]}>
-            {_range(7).map((n) => {
-                // Sets the ISO day of the week with 1 being Monday and 7 being Sunday.
-                const dayMoment = Moment(moment).isoWeekday(n + 1);
+        <>
+            {'TODO: disable Edit Recipes when a Grocery List Exists'}
+            <Grid gap={3} columns={[1, 2, 4]}>
+                {_range(7).map((n) => {
+                    // Sets the ISO day of the week with 1 being Monday and 7 being Sunday.
+                    const dayMoment = Moment(moment).isoWeekday(n + 1);
 
-                return (
-                    <WeekPlannerDayPlan moment={dayMoment} key={dayMoment.format('YYYY-MM-DD')} />
-                );
-            })}
-        </Grid>
+                    return (
+                        <WeekPlannerDayPlan
+                            moment={dayMoment}
+                            key={dayMoment.format('YYYY-MM-DD')}
+                        />
+                    );
+                })}
+            </Grid>
+        </>
     );
 };
 
