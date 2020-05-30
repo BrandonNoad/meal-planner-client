@@ -14,21 +14,9 @@ import {
 } from '../../redux/groceryListsSlice';
 
 const GroceryListItem = ({ item, onSubmit, onClickDelete }) => {
-    const [isRead, setIsRead] = useState(true);
+    const [isEditMode, setIsEditMode] = useState(false);
 
-    const content = isRead ? (
-        <>
-            {item.name} {item.quantity} {item.unit}
-            <Button onClick={onClickDelete}>X</Button>
-            <Button
-                onClick={() => {
-                    setIsRead(false);
-                }}
-            >
-                Edit
-            </Button>
-        </>
-    ) : (
+    const content = isEditMode ? (
         <GroceryListItemForm
             category={item.category}
             item={item.name}
@@ -36,9 +24,21 @@ const GroceryListItem = ({ item, onSubmit, onClickDelete }) => {
             unit={item.unit}
             onSubmit={onSubmit}
             onCancel={() => {
-                setIsRead(true);
+                setIsEditMode(false);
             }}
         />
+    ) : (
+        <>
+            {item.name} {item.quantity} {item.unit}
+            <Button onClick={onClickDelete}>X</Button>
+            <Button
+                onClick={() => {
+                    setIsEditMode(true);
+                }}
+            >
+                Edit
+            </Button>
+        </>
     );
 
     return <li>{content}</li>;
@@ -55,12 +55,15 @@ const GroceryList = ({ dateString }) => {
         return <Redirect to="/app" noThrow />;
     }
 
+    const items = groceryList.items.map(({ __typename, ...rest }) => rest);
+
     const handleClickDeleteGroceryList = () => {
         dispatch(deleteGroceryList(groceryList));
     };
 
-    const itemToPayload = ({ name, category, quantity, unit }) => ({
-        name,
+    // TODO: Get rid of me
+    const itemToPayload = ({ category, item, quantity, unit }) => ({
+        name: item,
         category,
         quantity,
         unit
@@ -70,20 +73,22 @@ const GroceryList = ({ dateString }) => {
         dispatch(
             updateGroceryList({
                 id: groceryList.id,
-                items: [...groceryList.items.map(itemToPayload), newItem]
+                items: [...items, newItem]
             })
         );
     };
 
-    const updateItem = (updatedItem, idx) => {
+    const updateItem = (oldItem, updatedItem) => {
+        const idx = items.indexOf(oldItem);
+
+        if (idx < 0) {
+            throw new Error('Bad implementation');
+        }
+
         dispatch(
             updateGroceryList({
                 id: groceryList.id,
-                items: [
-                    ...groceryList.items.slice(0, idx).map(itemToPayload),
-                    updatedItem,
-                    ...groceryList.items.slice(idx + 1).map(itemToPayload)
-                ]
+                items: [...items.slice(0, idx), updatedItem, ...items.slice(idx + 1)]
             })
         );
     };
@@ -92,12 +97,12 @@ const GroceryList = ({ dateString }) => {
         dispatch(
             updateGroceryList({
                 id: groceryList.id,
-                items: groceryList.items.filter((item) => item !== itemToDelete).map(itemToPayload)
+                items: items.filter((item) => item !== itemToDelete)
             })
         );
     };
 
-    const itemsGrouped = _groupBy(groceryList.items, 'category');
+    const itemsGrouped = _groupBy(items, 'category');
 
     return (
         <Box>
@@ -107,16 +112,20 @@ const GroceryList = ({ dateString }) => {
             {'TODO: Sort Categories alphabetically'}
             <br />
             {'TODO: Sort Items within a Category alphabetically'}
+            <br />
+            {'TODO: When a new item is added, try to group it before saving'}
             {_map(itemsGrouped, (items, category) => {
                 return (
                     <Box key={category}>
                         <Heading as="h4">{category}</Heading>
                         <ul>
-                            {items.map((item, idx) => (
+                            {items.map((item) => (
                                 <GroceryListItem
                                     key={item.name + item.unit}
                                     item={item}
-                                    onSubmit={(updatedItem) => updateItem(updatedItem, idx)}
+                                    onSubmit={(updatedItem) =>
+                                        updateItem(item, itemToPayload(updatedItem))
+                                    }
                                     onClickDelete={() => deleteItem(item)}
                                 />
                             ))}
@@ -124,7 +133,10 @@ const GroceryList = ({ dateString }) => {
                     </Box>
                 );
             })}
-            <GroceryListItemForm onSubmit={addItem} onCancel={() => {}} />
+            <GroceryListItemForm
+                onSubmit={(newItem) => addItem(itemToPayload(newItem))}
+                onCancel={() => {}}
+            />
         </Box>
     );
 };

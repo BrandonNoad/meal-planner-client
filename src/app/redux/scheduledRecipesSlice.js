@@ -134,12 +134,11 @@ const fetchScheduledRecipesEpic = (action$, state$) => {
 };
 
 const addRecipeMutation = `
-  mutation addRecipeMutation($teamId: Int!, $recipeId: Int!, $date: String!) {
-    addRecipe(teamId: $teamId, recipeId: $recipeId, date: $date) {
+  mutation addRecipeMutation($recipeId: Int!, $date: String!) {
+    addRecipe(recipeId: $recipeId, date: $date) {
       id
       date
       recipe {
-          id
           name
           url
       }
@@ -154,11 +153,7 @@ const addScheduledRecipeEpic = (action$, state$) =>
             from(
                 UrqlClient.mutation(
                     addRecipeMutation,
-                    {
-                        teamId: selectTeam(state$.value).id,
-                        recipeId: action.payload.recipeId,
-                        date: action.payload.date
-                    },
+                    { recipeId: action.payload.recipeId, date: action.payload.date },
                     { fetchOptions: getFetchOptions(selectAuthToken(state$.value)) }
                 ).toPromise()
             ).pipe(map((response) => response.data.addRecipe))
