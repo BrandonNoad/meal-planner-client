@@ -25,11 +25,20 @@ export const logOut = () =>
         returnTo: `${process.env.GATSBY_BASE_URL}/app/auth0/logout`
     });
 
+// https://auth0.com/docs/libraries/auth0js#using-checksession-to-acquire-new-tokens
+//
+// Note that checkSession() triggers any rules you may have set up, so you should check on your
+// rules in the Dashboard prior to using it.
+//
+// The actual redirect to / authorize happens inside an iframe, so it will not reload your
+// application or redirect away from it. However, the browser must have third-party cookies enabled.
+// Otherwise, checkSession() is unable to access the current user's session (making it impossible to
+// obtain a new token without displaying anything to the user). The same will happen if users have
+// Safari's ITP enabled.
 export const fetchSession = () =>
     new Promise((resolve, reject) => {
         getWebAuth().checkSession({ timeout: 5000 }, (err, authResult) => {
             if (err) {
-                console.log(err);
                 // If the user is not authenticated, you will receive an error like this:
                 // { error: 'login_required' }
                 const { error } = err;
