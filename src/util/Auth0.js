@@ -29,6 +29,7 @@ export const fetchSession = () =>
     new Promise((resolve, reject) => {
         getWebAuth().checkSession({ timeout: 5000 }, (err, authResult) => {
             if (err) {
+                console.log(err);
                 // If the user is not authenticated, you will receive an error like this:
                 // { error: 'login_required' }
                 const { error } = err;
